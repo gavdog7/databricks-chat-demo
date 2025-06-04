@@ -132,7 +132,7 @@ function App() {
               setTimeout(() => setStoryVisibility([true, true, false]), 233);
               setTimeout(() => setStoryVisibility([true, true, true]), 400);
               setCurrentStep(prev => prev + 1);
-            }, 667);
+            }, 2000);
           } else {
             setShowStories(true);
             // Auto-scroll up to show stories
@@ -174,7 +174,7 @@ function App() {
                 chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
               }
             }, 100);
-          }, 667);
+          }, 2000);
         } else {
           setMessages(prev => [...prev, step]);
           setCurrentStep(prev => prev + 1);

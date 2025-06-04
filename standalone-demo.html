@@ -280,6 +280,18 @@
         .hidden {
             display: none;
         }
+
+        .typing-top {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 18px;
+            padding: 8px;
+        }
     </style>
 </head>
 <body>
@@ -419,9 +431,9 @@
             return messageDiv;
         }
 
-        function createTypingIndicator() {
+        function createTypingIndicator(isTopPosition = false) {
             const messageDiv = document.createElement('div');
-            messageDiv.className = 'message bot';
+            messageDiv.className = `message bot ${isTopPosition ? 'typing-top' : ''}`;
             messageDiv.id = 'typing-indicator';
             
             const avatar = document.createElement('img');
@@ -546,8 +558,8 @@
                 setTimeout(() => {
                     if (step.type === 'stories') {
                         if (step.showTyping) {
-                            const typing = createTypingIndicator();
-                            container.appendChild(typing);
+                            const typing = createTypingIndicator(true);
+                            document.body.appendChild(typing);
                             setTimeout(() => typing.classList.add('show'), 10);
                             
                             setTimeout(() => {
@@ -568,7 +580,7 @@
                                 
                                 currentStep++;
                                 executeStep();
-                            }, 667);
+                            }, 2000);
                         }
                         return;
                     }
@@ -614,7 +626,7 @@
                             
                             currentStep++;
                             executeStep();
-                        }, 667);
+                        }, 2000);
                     } else {
                         const message = createMessage(step, step.type === 'user');
                         container.appendChild(message);

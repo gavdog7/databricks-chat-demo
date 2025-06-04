@@ -293,24 +293,6 @@
             display: none;
         }
 
-        .spacebar-prompt {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: #9ca3af;
-            font-size: 14px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 8px 16px;
-            border-radius: 20px;
-            z-index: 100;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .spacebar-prompt.show {
-            opacity: 1;
-        }
     </style>
 </head>
 <body>
@@ -325,9 +307,6 @@
         </div>
     </div>
 
-    <div class="spacebar-prompt" id="spacebarPrompt">
-        Press SPACE to continue
-    </div>
 
     <script>
         let currentStep = 0;
@@ -575,7 +554,6 @@
             container.innerHTML = '';
             currentStep = 0;
             waitingForSpace = false;
-            document.getElementById('spacebarPrompt').classList.remove('show');
             
             function executeStep() {
                 if (currentStep >= conversationFlow.length) {
@@ -604,10 +582,8 @@
                                 setTimeout(() => document.getElementById('story-1').classList.add('show'), 233);
                                 setTimeout(() => document.getElementById('story-2').classList.add('show'), 400);
                                 
-                                // Show spacebar prompt after stories appear
+                                // Wait for spacebar after stories appear
                                 setTimeout(() => {
-                                    const prompt = document.getElementById('spacebarPrompt');
-                                    prompt.classList.add('show');
                                     waitingForSpace = true;
                                 }, 1000);
                                 
@@ -687,7 +663,6 @@
             if (event.code === 'Space' && waitingForSpace) {
                 event.preventDefault();
                 waitingForSpace = false;
-                document.getElementById('spacebarPrompt').classList.remove('show');
                 executeStep();
             }
         });

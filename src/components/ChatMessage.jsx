@@ -19,7 +19,9 @@ const ChatMessage = ({ message, isUser, avatar, delay = 0 }) => {
       />
       <div className="message-content">
         {typeof message === 'string' ? (
-          message
+          <span dangerouslySetInnerHTML={{ 
+            __html: message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') 
+          }} />
         ) : (
           <div>
             {message.text}

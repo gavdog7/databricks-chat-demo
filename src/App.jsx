@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import ChatMessage from './components/ChatMessage';
 import TypingIndicator from './components/TypingIndicator';
@@ -10,6 +10,18 @@ function App() {
   const [showTyping, setShowTyping] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [showStories, setShowStories] = useState(false);
+  const [storyVisibility, setStoryVisibility] = useState([false, false, false]);
+  const [selectedStory, setSelectedStory] = useState(null);
+  const [fadeOut, setFadeOut] = useState(false);
+  const chatContainerRef = useRef(null);
+
+  // Auto-start demo on component mount
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setCurrentStep(0);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const storyData = [
     {
@@ -48,7 +60,7 @@ function App() {
   const conversationFlow = [
     {
       type: 'user',
-      message: "I'm meeting with FedEx tomorrow. Show me Databricks success stories they'll love",
+      message: "I'm meeting with **FedEx** tomorrow. Show me Databricks success stories they'll love",
       delay: 0
     },
     {
@@ -81,6 +93,14 @@ function App() {
     {
       type: 'stories',
       delay: 11
+    },
+    {
+      type: 'click',
+      delay: 17
+    },
+    {
+      type: 'restart',
+      delay: 20
     }
   ];
 
@@ -91,6 +111,23 @@ function App() {
       const timer = setTimeout(() => {
         if (step.type === 'stories') {
           setShowStories(true);
+          // Show stories sequentially
+          setTimeout(() => setStoryVisibility([true, false, false]), 200);
+          setTimeout(() => setStoryVisibility([true, true, false]), 700);
+          setTimeout(() => setStoryVisibility([true, true, true]), 1200);
+          setCurrentStep(prev => prev + 1);
+          return;
+        }
+
+        if (step.type === 'click') {
+          setSelectedStory(1); // Major Rail Operator
+          setTimeout(() => setFadeOut(true), 500);
+          setCurrentStep(prev => prev + 1);
+          return;
+        }
+
+        if (step.type === 'restart') {
+          resetDemo();
           return;
         }
 
@@ -100,6 +137,12 @@ function App() {
           setMessages(prev => [...prev, step]);
           setShowTyping(false);
           setCurrentStep(prev => prev + 1);
+          // Auto-scroll to bottom
+          setTimeout(() => {
+            if (chatContainerRef.current) {
+              chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+            }
+          }, 100);
         }, 2000);
         
       }, step.delay * 1000);
@@ -113,38 +156,45 @@ function App() {
     setShowTyping(false);
     setCurrentStep(0);
     setShowStories(false);
+    setStoryVisibility([false, false, false]);
+    setSelectedStory(null);
+    setFadeOut(false);
+  };
+
+  const handleStoryClick = (index) => {
+    // This will be handled by the automatic flow
   };
 
   return (
     <div className="app">
       <header className="chat-header">
         <img src="/Databricks logo white.webp" alt="Databricks" className="databricks-logo" />
-        <h1 className="header-title">AI Assistant</h1>
+        <h1 className="header-title">Success Story Finder</h1>
       </header>
       
-      <div className="chat-container">
+      <div className="chat-container" ref={chatContainerRef}>
         <AnimatePresence>
           {messages.map((msg, index) => (
             <ChatMessage
               key={index}
               message={msg.message}
               isUser={msg.type === 'user'}
-              avatar={msg.type === 'user' ? "/Databricks AE face.png" : "/Databricks AE face.png"}
+              avatar={msg.type === 'user' ? "/Databricks AE face.png" : "/Databricks logo white.webp"}
               delay={0}
             />
           ))}
           
           {showTyping && (
             <TypingIndicator 
-              avatar="/Databricks AE face.png"
+              avatar="/Databricks logo white.webp"
               delay={0}
             />
           )}
           
           {showStories && (
-            <div className="message bot">
+            <div className={`message bot ${fadeOut ? 'fade-out' : ''}`}>
               <img 
-                src="/Databricks AE face.png" 
+                src="/Databricks logo white.webp" 
                 alt="AI Assistant" 
                 className="message-avatar"
               />
@@ -155,7 +205,10 @@ function App() {
                     <StoryCard 
                       key={index}
                       story={story}
-                      delay={index * 0.5}
+                      delay={index * 0.15}
+                      isVisible={storyVisibility[index]}
+                      isSelected={selectedStory === index}
+                      onClick={() => handleStoryClick(index)}
                     />
                   ))}
                 </div>
@@ -165,9 +218,6 @@ function App() {
         </AnimatePresence>
       </div>
       
-      <button className="replay-button" onClick={resetDemo}>
-        ↻ Replay Demo
-      </button>
     </div>
   );
 }

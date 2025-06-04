@@ -27,7 +27,7 @@ function App() {
     {
       title: "Global Logistics Leader",
       partner: "EPAM",
-      partnerLogo: "/epam logo.png",
+      partnerLogo: "/epam logo trimmed.png",
       metrics: [
         { value: "$10M+", label: "Savings" },
         { value: "3x", label: "Faster Routing" }
@@ -37,7 +37,7 @@ function App() {
     {
       title: "Major Rail Operator", 
       partner: "Impetus",
-      partnerLogo: "/Impetus logo.png",
+      partnerLogo: "/Impetus logo trimmed.png",
       metrics: [
         { value: "30%", label: "Infra Cost ↓" },
         { value: "50%", label: "Faster Ops" },
@@ -47,8 +47,8 @@ function App() {
     },
     {
       title: "Supply Chain Giant",
-      partner: "Lovelytics", 
-      partnerLogo: "/lovelytics logo.png",
+      partner: "CGI", 
+      partnerLogo: "/cgi trimmed.png",
       metrics: [
         { value: "50K+", label: "Daily Shipments" },
         { value: "1,000+", label: "Users Enabled" }
@@ -66,7 +66,7 @@ function App() {
     },
     {
       type: 'bot',
-      message: "I understand you're looking for stories relevant to FedEx. They're in Logistics/Shipping and face challenges with supply chain optimization and delivery efficiency.",
+      message: "I understand you're looking for stories relevant to **FedEx**. They're in Logistics/Shipping and face challenges with supply chain optimization and delivery efficiency.",
       delay: 0.7,
       showTyping: true
     },
@@ -240,7 +240,7 @@ function App() {
                 className="message-avatar"
               />
               <div className="message-content">
-                <div>Here are the most relevant success stories for FedEx:</div>
+                <div>Here are the most relevant success stories for **FedEx**:</div>
                 <div className="story-cards">
                   {storyData.map((story, index) => (
                     <StoryCard 

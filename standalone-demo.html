@@ -41,7 +41,7 @@
         }
 
         .databricks-logo {
-            height: 24px;
+            height: 31px;
             margin-right: 16px;
         }
 
@@ -88,8 +88,8 @@
         }
 
         .message-avatar {
-            width: 40px;
-            height: 40px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             flex-shrink: 0;
             object-fit: cover;
@@ -314,7 +314,7 @@
             {
                 title: "Global Logistics Leader",
                 partner: "EPAM",
-                partnerLogo: "epam logo.png",
+                partnerLogo: "epam logo trimmed.png",
                 metrics: [
                     { value: "$10M+", label: "Savings" },
                     { value: "3x", label: "Faster Routing" }
@@ -324,7 +324,7 @@
             {
                 title: "Major Rail Operator", 
                 partner: "Impetus",
-                partnerLogo: "Impetus logo.png",
+                partnerLogo: "Impetus logo trimmed.png",
                 metrics: [
                     { value: "30%", label: "Infra Cost ↓" },
                     { value: "50%", label: "Faster Ops" },
@@ -334,8 +334,8 @@
             },
             {
                 title: "Supply Chain Giant",
-                partner: "Lovelytics", 
-                partnerLogo: "lovelytics logo.png",
+                partner: "CGI", 
+                partnerLogo: "cgi trimmed.png",
                 metrics: [
                     { value: "50K+", label: "Daily Shipments" },
                     { value: "1,000+", label: "Users Enabled" }
@@ -353,7 +353,7 @@
             },
             {
                 type: 'bot',
-                message: "I understand you're looking for stories relevant to FedEx. They're in Logistics/Shipping and face challenges with supply chain optimization and delivery efficiency.",
+                message: "I understand you're looking for stories relevant to <strong>FedEx</strong>. They're in Logistics/Shipping and face challenges with supply chain optimization and delivery efficiency.",
                 delay: 700,
                 showTyping: true
             },
@@ -472,7 +472,7 @@
             
             const content = document.createElement('div');
             content.className = 'message-content';
-            content.innerHTML = '<div>Here are the most relevant success stories for FedEx:</div>';
+            content.innerHTML = '<div>Here are the most relevant success stories for <strong>FedEx</strong>:</div>';
             
             const cardsContainer = document.createElement('div');
             cardsContainer.className = 'story-cards';

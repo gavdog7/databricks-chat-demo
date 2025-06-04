@@ -61,12 +61,14 @@ function App() {
     {
       type: 'user',
       message: "I'm meeting with **FedEx** tomorrow. Show me Databricks success stories they'll love",
-      delay: 0
+      delay: 0,
+      showTyping: false
     },
     {
       type: 'bot',
       message: "I understand you're looking for stories relevant to FedEx. They're in Logistics/Shipping and face challenges with supply chain optimization and delivery efficiency.",
-      delay: 0.7
+      delay: 0.7,
+      showTyping: true
     },
     {
       type: 'bot', 
@@ -78,21 +80,25 @@ function App() {
           "Supply chain management"
         ]
       },
-      delay: 1.3
+      delay: 1.3,
+      showTyping: false
     },
     {
       type: 'bot',
       message: "Does that work?",
-      delay: 2.3
+      delay: 2.3,
+      showTyping: false
     },
     {
       type: 'user',
       message: "Yes! That would be great",
-      delay: 3
+      delay: 3,
+      showTyping: false
     },
     {
       type: 'stories',
-      delay: 3.7
+      delay: 3.7,
+      showTyping: true
     },
     {
       type: 'click',
@@ -110,18 +116,37 @@ function App() {
       
       const timer = setTimeout(() => {
         if (step.type === 'stories') {
-          setShowStories(true);
-          // Auto-scroll up to show stories
-          setTimeout(() => {
-            if (chatContainerRef.current) {
-              chatContainerRef.current.scrollTop = 0;
-            }
-          }, 100);
-          // Show stories sequentially
-          setTimeout(() => setStoryVisibility([true, false, false]), 67);
-          setTimeout(() => setStoryVisibility([true, true, false]), 233);
-          setTimeout(() => setStoryVisibility([true, true, true]), 400);
-          setCurrentStep(prev => prev + 1);
+          if (step.showTyping) {
+            setShowTyping(true);
+            setTimeout(() => {
+              setShowTyping(false);
+              setShowStories(true);
+              // Auto-scroll up to show stories
+              setTimeout(() => {
+                if (chatContainerRef.current) {
+                  chatContainerRef.current.scrollTop = 0;
+                }
+              }, 100);
+              // Show stories sequentially
+              setTimeout(() => setStoryVisibility([true, false, false]), 67);
+              setTimeout(() => setStoryVisibility([true, true, false]), 233);
+              setTimeout(() => setStoryVisibility([true, true, true]), 400);
+              setCurrentStep(prev => prev + 1);
+            }, 667);
+          } else {
+            setShowStories(true);
+            // Auto-scroll up to show stories
+            setTimeout(() => {
+              if (chatContainerRef.current) {
+                chatContainerRef.current.scrollTop = 0;
+              }
+            }, 100);
+            // Show stories sequentially
+            setTimeout(() => setStoryVisibility([true, false, false]), 67);
+            setTimeout(() => setStoryVisibility([true, true, false]), 233);
+            setTimeout(() => setStoryVisibility([true, true, true]), 400);
+            setCurrentStep(prev => prev + 1);
+          }
           return;
         }
 
@@ -137,11 +162,21 @@ function App() {
           return;
         }
 
-        setShowTyping(true);
-        
-        setTimeout(() => {
+        if (step.showTyping) {
+          setShowTyping(true);
+          setTimeout(() => {
+            setMessages(prev => [...prev, step]);
+            setShowTyping(false);
+            setCurrentStep(prev => prev + 1);
+            // Auto-scroll to bottom, except for the "Yes!" message
+            setTimeout(() => {
+              if (chatContainerRef.current && step.message !== "Yes! That would be great") {
+                chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+              }
+            }, 100);
+          }, 667);
+        } else {
           setMessages(prev => [...prev, step]);
-          setShowTyping(false);
           setCurrentStep(prev => prev + 1);
           // Auto-scroll to bottom, except for the "Yes!" message
           setTimeout(() => {
@@ -149,7 +184,7 @@ function App() {
               chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
             }
           }, 100);
-        }, 667);
+        }
         
       }, step.delay * 1000);
 

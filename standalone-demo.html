@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Databricks Chat Demo</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app {
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #0a0e1a 0%, #000000 100%);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            display: flex;
+            align-items: center;
+            padding: 20px 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .databricks-logo {
+            height: 24px;
+            margin-right: 16px;
+        }
+
+        .header-title {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 40px;
+            overflow-y: auto;
+            gap: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            max-width: 80%;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease-out;
+        }
+
+        .message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message.bot {
+            align-self: flex-start;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            object-fit: cover;
+        }
+
+        .message-content {
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 18px;
+            padding: 16px 20px;
+            color: white;
+            font-size: 14px;
+            line-height: 1.4;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            max-width: 100%;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+            border: none;
+            color: white;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 16px 20px;
+            align-items: center;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #6b7280;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.4;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+
+        .story-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 8px;
+        }
+
+        .story-card {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 20px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+        }
+
+        .story-card.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .story-card.selected {
+            opacity: 0.7;
+            transform: translateY(0) scale(1.02);
+            background-color: #374151;
+        }
+
+        .story-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .partner-logo-container {
+            width: 56px;
+            height: 40px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            flex-shrink: 0;
+        }
+
+        .partner-logo {
+            width: 32px;
+            height: 24px;
+            object-fit: contain;
+            filter: brightness(1.1);
+        }
+
+        .story-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #f3f4f6;
+            flex: 1;
+            margin-right: 16px;
+        }
+
+        .story-metrics {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .metric {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .metric-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #10b981;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .story-description {
+            font-size: 14px;
+            color: #d1d5db;
+            line-height: 1.4;
+        }
+
+        .bullet-list {
+            margin: 8px 0;
+            padding-left: 0;
+            list-style: none;
+        }
+
+        .bullet-list li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 4px;
+            color: #d1d5db;
+        }
+
+        .bullet-list li::before {
+            content: "•";
+            color: #10b981;
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .fade-out {
+            animation: fadeOutAnimation 1s ease-out forwards;
+        }
+
+        @keyframes fadeOutAnimation {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <header class="chat-header">
+            <img src="Databricks logo white.webp" alt="Databricks" class="databricks-logo" />
+            <h1 class="header-title">Success Story Finder</h1>
+        </header>
+        
+        <div class="chat-container" id="chatContainer">
+            <!-- Messages will be added here dynamically -->
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 0;
+        let isRunning = false;
+
+        const storyData = [
+            {
+                title: "Global Logistics Leader",
+                partner: "EPAM",
+                partnerLogo: "epam logo.png",
+                metrics: [
+                    { value: "$10M+", label: "Savings" },
+                    { value: "3x", label: "Faster Routing" }
+                ],
+                description: "Replaced legacy systems → Now runs most efficient NA transport network"
+            },
+            {
+                title: "Major Rail Operator", 
+                partner: "Impetus",
+                partnerLogo: "Impetus logo.png",
+                metrics: [
+                    { value: "30%", label: "Infra Cost ↓" },
+                    { value: "50%", label: "Faster Ops" },
+                    { value: "30%", label: "CO₂ ↓ by 2030" }
+                ],
+                description: "Modernized operations for unprecedented efficiency gains"
+            },
+            {
+                title: "Supply Chain Giant",
+                partner: "Lovelytics", 
+                partnerLogo: "lovelytics logo.png",
+                metrics: [
+                    { value: "50K+", label: "Daily Shipments" },
+                    { value: "1,000+", label: "Users Enabled" }
+                ],
+                description: "Unified platform data & AI platform → Democratized analytics with real-time tracking"
+            }
+        ];
+
+        const conversationFlow = [
+            {
+                type: 'user',
+                message: "I'm meeting with <strong>FedEx</strong> tomorrow. Show me Databricks success stories they'll love",
+                delay: 0,
+                showTyping: false
+            },
+            {
+                type: 'bot',
+                message: "I understand you're looking for stories relevant to FedEx. They're in Logistics/Shipping and face challenges with supply chain optimization and delivery efficiency.",
+                delay: 700,
+                showTyping: true
+            },
+            {
+                type: 'bot', 
+                message: {
+                    text: "I suggest searching for success stories in:",
+                    bullets: [
+                        "Logistics innovation",
+                        "Shipping tech", 
+                        "Supply chain management"
+                    ]
+                },
+                delay: 1300,
+                showTyping: false
+            },
+            {
+                type: 'bot',
+                message: "Does that work?",
+                delay: 2300,
+                showTyping: false
+            },
+            {
+                type: 'user',
+                message: "Yes! That would be great",
+                delay: 3000,
+                showTyping: false
+            },
+            {
+                type: 'stories',
+                delay: 3700,
+                showTyping: true
+            },
+            {
+                type: 'click',
+                delay: 5700
+            },
+            {
+                type: 'restart',
+                delay: 6700
+            }
+        ];
+
+        function createMessage(step, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+            
+            const avatar = document.createElement('img');
+            avatar.className = 'message-avatar';
+            avatar.src = isUser ? 'Databricks AE face.png' : 'Databricks logo white.webp';
+            avatar.alt = isUser ? 'User' : 'AI Assistant';
+            
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            
+            if (typeof step.message === 'string') {
+                content.innerHTML = step.message;
+            } else {
+                content.innerHTML = step.message.text;
+                if (step.message.bullets) {
+                    const ul = document.createElement('ul');
+                    ul.className = 'bullet-list';
+                    step.message.bullets.forEach(bullet => {
+                        const li = document.createElement('li');
+                        li.textContent = bullet;
+                        ul.appendChild(li);
+                    });
+                    content.appendChild(ul);
+                }
+            }
+            
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(content);
+            
+            return messageDiv;
+        }
+
+        function createTypingIndicator() {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+            messageDiv.id = 'typing-indicator';
+            
+            const avatar = document.createElement('img');
+            avatar.className = 'message-avatar';
+            avatar.src = 'Databricks logo white.webp';
+            avatar.alt = 'AI Assistant';
+            
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            
+            const typing = document.createElement('div');
+            typing.className = 'typing-indicator';
+            
+            for (let i = 0; i < 3; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'typing-dot';
+                typing.appendChild(dot);
+            }
+            
+            content.appendChild(typing);
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(content);
+            
+            return messageDiv;
+        }
+
+        function createStoryCards() {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+            messageDiv.id = 'story-message';
+            
+            const avatar = document.createElement('img');
+            avatar.className = 'message-avatar';
+            avatar.src = 'Databricks logo white.webp';
+            avatar.alt = 'AI Assistant';
+            
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            content.innerHTML = '<div>Here are the most relevant success stories for FedEx:</div>';
+            
+            const cardsContainer = document.createElement('div');
+            cardsContainer.className = 'story-cards';
+            
+            storyData.forEach((story, index) => {
+                const card = document.createElement('div');
+                card.className = 'story-card';
+                card.id = `story-${index}`;
+                
+                const header = document.createElement('div');
+                header.className = 'story-header';
+                
+                const title = document.createElement('div');
+                title.className = 'story-title';
+                title.textContent = story.title;
+                
+                const logoContainer = document.createElement('div');
+                logoContainer.className = 'partner-logo-container';
+                
+                const logo = document.createElement('img');
+                logo.className = 'partner-logo';
+                logo.src = story.partnerLogo;
+                logo.alt = `${story.partner} logo`;
+                logoContainer.appendChild(logo);
+                
+                header.appendChild(title);
+                header.appendChild(logoContainer);
+                
+                const metrics = document.createElement('div');
+                metrics.className = 'story-metrics';
+                
+                story.metrics.forEach(metric => {
+                    const metricDiv = document.createElement('div');
+                    metricDiv.className = 'metric';
+                    
+                    const value = document.createElement('div');
+                    value.className = 'metric-value';
+                    value.textContent = metric.value;
+                    
+                    const label = document.createElement('div');
+                    label.className = 'metric-label';
+                    label.textContent = metric.label;
+                    
+                    metricDiv.appendChild(value);
+                    metricDiv.appendChild(label);
+                    metrics.appendChild(metricDiv);
+                });
+                
+                const description = document.createElement('div');
+                description.className = 'story-description';
+                description.textContent = story.description;
+                
+                card.appendChild(header);
+                card.appendChild(metrics);
+                card.appendChild(description);
+                cardsContainer.appendChild(card);
+            });
+            
+            content.appendChild(cardsContainer);
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(content);
+            
+            return messageDiv;
+        }
+
+        function runDemo() {
+            if (isRunning) return;
+            isRunning = true;
+            
+            const container = document.getElementById('chatContainer');
+            container.innerHTML = '';
+            currentStep = 0;
+            
+            function executeStep() {
+                if (currentStep >= conversationFlow.length) {
+                    isRunning = false;
+                    setTimeout(() => runDemo(), 1000);
+                    return;
+                }
+                
+                const step = conversationFlow[currentStep];
+                
+                setTimeout(() => {
+                    if (step.type === 'stories') {
+                        if (step.showTyping) {
+                            const typing = createTypingIndicator();
+                            container.appendChild(typing);
+                            setTimeout(() => typing.classList.add('show'), 10);
+                            
+                            setTimeout(() => {
+                                typing.remove();
+                                const storiesMessage = createStoryCards();
+                                container.appendChild(storiesMessage);
+                                setTimeout(() => storiesMessage.classList.add('show'), 10);
+                                
+                                // Auto-scroll to top
+                                setTimeout(() => {
+                                    container.scrollTop = 0;
+                                }, 100);
+                                
+                                // Show story cards sequentially
+                                setTimeout(() => document.getElementById('story-0').classList.add('show'), 67);
+                                setTimeout(() => document.getElementById('story-1').classList.add('show'), 233);
+                                setTimeout(() => document.getElementById('story-2').classList.add('show'), 400);
+                                
+                                currentStep++;
+                                executeStep();
+                            }, 667);
+                        }
+                        return;
+                    }
+                    
+                    if (step.type === 'click') {
+                        const storyCard = document.getElementById('story-1');
+                        if (storyCard) {
+                            storyCard.classList.add('selected');
+                            setTimeout(() => {
+                                const storyMessage = document.getElementById('story-message');
+                                if (storyMessage) storyMessage.classList.add('fade-out');
+                            }, 500);
+                        }
+                        currentStep++;
+                        executeStep();
+                        return;
+                    }
+                    
+                    if (step.type === 'restart') {
+                        isRunning = false;
+                        setTimeout(() => runDemo(), 1000);
+                        return;
+                    }
+                    
+                    // Regular message handling
+                    if (step.showTyping) {
+                        const typing = createTypingIndicator();
+                        container.appendChild(typing);
+                        setTimeout(() => typing.classList.add('show'), 10);
+                        
+                        setTimeout(() => {
+                            typing.remove();
+                            const message = createMessage(step, step.type === 'user');
+                            container.appendChild(message);
+                            setTimeout(() => message.classList.add('show'), 10);
+                            
+                            // Auto-scroll except for "Yes!" message
+                            if (step.message !== "Yes! That would be great") {
+                                setTimeout(() => {
+                                    container.scrollTop = container.scrollHeight;
+                                }, 100);
+                            }
+                            
+                            currentStep++;
+                            executeStep();
+                        }, 667);
+                    } else {
+                        const message = createMessage(step, step.type === 'user');
+                        container.appendChild(message);
+                        setTimeout(() => message.classList.add('show'), 10);
+                        
+                        // Auto-scroll except for "Yes!" message
+                        if (step.message !== "Yes! That would be great") {
+                            setTimeout(() => {
+                                container.scrollTop = container.scrollHeight;
+                            }, 100);
+                        }
+                        
+                        currentStep++;
+                        executeStep();
+                    }
+                }, step.delay);
+            }
+            
+            executeStep();
+        }
+
+        // Start demo when page loads
+        window.addEventListener('load', () => {
+            setTimeout(() => runDemo(), 500);
+        });
+    </script>
+</body>
+</html>

@@ -13,6 +13,8 @@ function App() {
   const [storyVisibility, setStoryVisibility] = useState([false, false, false]);
   const [selectedStory, setSelectedStory] = useState(null);
   const [fadeOut, setFadeOut] = useState(false);
+  const [waitingForSpace, setWaitingForSpace] = useState(false);
+  const [showSpacePrompt, setShowSpacePrompt] = useState(false);
   const chatContainerRef = useRef(null);
 
   // Auto-start demo on component mount
@@ -22,6 +24,21 @@ function App() {
     }, 500);
     return () => clearTimeout(timer);
   }, []);
+
+  // Spacebar event listener
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.code === 'Space' && waitingForSpace) {
+        event.preventDefault();
+        setWaitingForSpace(false);
+        setShowSpacePrompt(false);
+        setCurrentStep(prev => prev + 1);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [waitingForSpace]);
 
   const storyData = [
     {
@@ -121,39 +138,27 @@ function App() {
             setTimeout(() => {
               setShowTyping(false);
               setShowStories(true);
-              // Auto-scroll up to show stories
-              setTimeout(() => {
-                if (chatContainerRef.current) {
-                  chatContainerRef.current.scrollTop = 0;
-                }
-              }, 100);
               // Show stories sequentially
               setTimeout(() => setStoryVisibility([true, false, false]), 67);
               setTimeout(() => setStoryVisibility([true, true, false]), 233);
               setTimeout(() => setStoryVisibility([true, true, true]), 400);
+              // Show spacebar prompt after stories appear
+              setTimeout(() => {
+                setShowSpacePrompt(true);
+                setWaitingForSpace(true);
+              }, 1000);
               setCurrentStep(prev => prev + 1);
             }, 2000);
-          } else {
-            setShowStories(true);
-            // Auto-scroll up to show stories
-            setTimeout(() => {
-              if (chatContainerRef.current) {
-                chatContainerRef.current.scrollTop = 0;
-              }
-            }, 100);
-            // Show stories sequentially
-            setTimeout(() => setStoryVisibility([true, false, false]), 67);
-            setTimeout(() => setStoryVisibility([true, true, false]), 233);
-            setTimeout(() => setStoryVisibility([true, true, true]), 400);
-            setCurrentStep(prev => prev + 1);
           }
           return;
         }
 
         if (step.type === 'click') {
-          setSelectedStory(1); // Major Rail Operator
-          setTimeout(() => setFadeOut(true), 500);
-          setCurrentStep(prev => prev + 1);
+          if (!waitingForSpace) {
+            setSelectedStory(1); // Major Rail Operator
+            setTimeout(() => setFadeOut(true), 500);
+            setCurrentStep(prev => prev + 1);
+          }
           return;
         }
 
@@ -200,6 +205,8 @@ function App() {
     setStoryVisibility([false, false, false]);
     setSelectedStory(null);
     setFadeOut(false);
+    setWaitingForSpace(false);
+    setShowSpacePrompt(false);
   };
 
   const handleStoryClick = (index) => {
@@ -259,6 +266,9 @@ function App() {
         </AnimatePresence>
       </div>
       
+      <div className={`spacebar-prompt ${showSpacePrompt ? 'show' : ''}`}>
+        Press SPACE to continue
+      </div>
     </div>
   );
 }

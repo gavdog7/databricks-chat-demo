@@ -56,6 +56,7 @@
             display: flex;
             flex-direction: column;
             padding: 40px;
+            padding-bottom: 800px;
             overflow-y: auto;
             gap: 24px;
             max-width: 1200px;
@@ -281,16 +282,23 @@
             display: none;
         }
 
-        .typing-top {
+        .spacebar-prompt {
             position: fixed;
-            top: 80px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 100;
+            color: #9ca3af;
+            font-size: 14px;
             background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            border-radius: 18px;
-            padding: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .spacebar-prompt.show {
+            opacity: 1;
         }
     </style>
 </head>
@@ -306,9 +314,14 @@
         </div>
     </div>
 
+    <div class="spacebar-prompt" id="spacebarPrompt">
+        Press SPACE to continue
+    </div>
+
     <script>
         let currentStep = 0;
         let isRunning = false;
+        let waitingForSpace = false;
 
         const storyData = [
             {
@@ -431,9 +444,9 @@
             return messageDiv;
         }
 
-        function createTypingIndicator(isTopPosition = false) {
+        function createTypingIndicator() {
             const messageDiv = document.createElement('div');
-            messageDiv.className = `message bot ${isTopPosition ? 'typing-top' : ''}`;
+            messageDiv.className = 'message bot';
             messageDiv.id = 'typing-indicator';
             
             const avatar = document.createElement('img');
@@ -545,6 +558,8 @@
             const container = document.getElementById('chatContainer');
             container.innerHTML = '';
             currentStep = 0;
+            waitingForSpace = false;
+            document.getElementById('spacebarPrompt').classList.remove('show');
             
             function executeStep() {
                 if (currentStep >= conversationFlow.length) {
@@ -558,8 +573,8 @@
                 setTimeout(() => {
                     if (step.type === 'stories') {
                         if (step.showTyping) {
-                            const typing = createTypingIndicator(true);
-                            document.body.appendChild(typing);
+                            const typing = createTypingIndicator();
+                            container.appendChild(typing);
                             setTimeout(() => typing.classList.add('show'), 10);
                             
                             setTimeout(() => {
@@ -568,34 +583,37 @@
                                 container.appendChild(storiesMessage);
                                 setTimeout(() => storiesMessage.classList.add('show'), 10);
                                 
-                                // Auto-scroll to top
-                                setTimeout(() => {
-                                    container.scrollTop = 0;
-                                }, 100);
-                                
                                 // Show story cards sequentially
                                 setTimeout(() => document.getElementById('story-0').classList.add('show'), 67);
                                 setTimeout(() => document.getElementById('story-1').classList.add('show'), 233);
                                 setTimeout(() => document.getElementById('story-2').classList.add('show'), 400);
                                 
+                                // Show spacebar prompt after stories appear
+                                setTimeout(() => {
+                                    const prompt = document.getElementById('spacebarPrompt');
+                                    prompt.classList.add('show');
+                                    waitingForSpace = true;
+                                }, 1000);
+                                
                                 currentStep++;
-                                executeStep();
                             }, 2000);
                         }
                         return;
                     }
                     
                     if (step.type === 'click') {
-                        const storyCard = document.getElementById('story-1');
-                        if (storyCard) {
-                            storyCard.classList.add('selected');
-                            setTimeout(() => {
-                                const storyMessage = document.getElementById('story-message');
-                                if (storyMessage) storyMessage.classList.add('fade-out');
-                            }, 500);
+                        if (!waitingForSpace) {
+                            const storyCard = document.getElementById('story-1');
+                            if (storyCard) {
+                                storyCard.classList.add('selected');
+                                setTimeout(() => {
+                                    const storyMessage = document.getElementById('story-message');
+                                    if (storyMessage) storyMessage.classList.add('fade-out');
+                                }, 500);
+                            }
+                            currentStep++;
+                            executeStep();
                         }
-                        currentStep++;
-                        executeStep();
                         return;
                     }
                     
@@ -647,6 +665,16 @@
             
             executeStep();
         }
+
+        // Spacebar event listener
+        document.addEventListener('keydown', (event) => {
+            if (event.code === 'Space' && waitingForSpace) {
+                event.preventDefault();
+                waitingForSpace = false;
+                document.getElementById('spacebarPrompt').classList.remove('show');
+                executeStep();
+            }
+        });
 
         // Start demo when page loads
         window.addEventListener('load', () => {

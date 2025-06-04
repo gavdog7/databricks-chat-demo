@@ -66,7 +66,7 @@ function App() {
     {
       type: 'bot',
       message: "I understand you're looking for stories relevant to FedEx. They're in Logistics/Shipping and face challenges with supply chain optimization and delivery efficiency.",
-      delay: 2
+      delay: 0.7
     },
     {
       type: 'bot', 
@@ -78,29 +78,29 @@ function App() {
           "Supply chain management"
         ]
       },
-      delay: 4
+      delay: 1.3
     },
     {
       type: 'bot',
       message: "Does that work?",
-      delay: 7
+      delay: 2.3
     },
     {
       type: 'user',
       message: "Yes! That would be great",
-      delay: 9
+      delay: 3
     },
     {
       type: 'stories',
-      delay: 11
+      delay: 3.7
     },
     {
       type: 'click',
-      delay: 17
+      delay: 5.7
     },
     {
       type: 'restart',
-      delay: 20
+      delay: 6.7
     }
   ];
 
@@ -111,10 +111,16 @@ function App() {
       const timer = setTimeout(() => {
         if (step.type === 'stories') {
           setShowStories(true);
+          // Auto-scroll up to show stories
+          setTimeout(() => {
+            if (chatContainerRef.current) {
+              chatContainerRef.current.scrollTop = 0;
+            }
+          }, 100);
           // Show stories sequentially
-          setTimeout(() => setStoryVisibility([true, false, false]), 200);
-          setTimeout(() => setStoryVisibility([true, true, false]), 700);
-          setTimeout(() => setStoryVisibility([true, true, true]), 1200);
+          setTimeout(() => setStoryVisibility([true, false, false]), 67);
+          setTimeout(() => setStoryVisibility([true, true, false]), 233);
+          setTimeout(() => setStoryVisibility([true, true, true]), 400);
           setCurrentStep(prev => prev + 1);
           return;
         }
@@ -137,13 +143,13 @@ function App() {
           setMessages(prev => [...prev, step]);
           setShowTyping(false);
           setCurrentStep(prev => prev + 1);
-          // Auto-scroll to bottom
+          // Auto-scroll to bottom, except for the "Yes!" message
           setTimeout(() => {
-            if (chatContainerRef.current) {
+            if (chatContainerRef.current && step.message !== "Yes! That would be great") {
               chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
             }
           }, 100);
-        }, 2000);
+        }, 667);
         
       }, step.delay * 1000);
 
@@ -205,7 +211,7 @@ function App() {
                     <StoryCard 
                       key={index}
                       story={story}
-                      delay={index * 0.15}
+                      delay={index * 0.05}
                       isVisible={storyVisibility[index]}
                       isSelected={selectedStory === index}
                       onClick={() => handleStoryClick(index)}

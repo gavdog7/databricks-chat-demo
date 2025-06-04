@@ -14,7 +14,7 @@ const StoryCard = ({ story, delay = 0, isVisible, isSelected, onClick }) => {
         backgroundColor: isSelected ? '#374151' : undefined
       }}
       transition={{ 
-        duration: 0.6, 
+        duration: 0.2, 
         delay,
         ease: "easeOut"
       }}

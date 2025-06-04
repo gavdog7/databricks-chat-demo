@@ -40,7 +40,7 @@ body {
 }
 
 .databricks-logo {
-  height: 32px;
+  height: 24px;
   margin-right: 16px;
 }
 
@@ -169,19 +169,19 @@ body {
 
 .partner-logo-container {
   width: 56px;
-  height: 56px;
-  border-radius: 50%;
+  height: 40px;
+  border-radius: 8px;
   background: linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px;
+  padding: 6px;
   flex-shrink: 0;
 }
 
 .partner-logo {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 24px;
   object-fit: contain;
   filter: brightness(1.1);
 }
